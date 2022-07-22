@@ -1,4 +1,4 @@
-/* Xiaomi Mi R3G */
+/* Xiaomi Mi R3PRO */
 
 #define BOARD_PID		"MI-R3PRO"
 #define BOARD_NAME		"MI-R3PRO"
