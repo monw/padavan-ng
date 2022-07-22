@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, 2019, Sinodun Internet Technologies Ltd.
+ * Copyright (c) 2017, 2019, 2020, Sinodun Internet Technologies Ltd.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,6 +28,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <assert.h>
 
 #include "config.h"
@@ -40,7 +41,6 @@
 #include "sldns/sbuffer.h"
 #endif
 #include "convert_yaml_to_json.h"
-#include "../logger.h"
 
 static int process_yaml_stream(yaml_parser_t *, yaml_event_t *, gldns_buffer *);
 
@@ -58,6 +58,32 @@ static void report_parser_error(yaml_parser_t *);
 
 static char* event_type_string(yaml_event_type_t);
 
+static int quote_next_scalar;
+
+static const char* QUOTE_KEY_VALUES[] = {
+	"tls_ca_path",
+	"tls_ca_file",
+	"tls_cipher_list",
+	"tls_ciphersuites",
+	"tls_curves_list",
+	"appdata_dir",
+	"dnssec_trust_anchors",
+	"tls_auth_name",
+	"digest",
+	"resolvconf",
+	NULL
+};
+
+static void quote_key_values(const char *key)
+{
+	quote_next_scalar = 0;
+	for ( const char** p = QUOTE_KEY_VALUES; *p; p++ )
+		if ( !strcmp(key, *p) ) {
+			quote_next_scalar = 1;
+			break;
+		}
+}
+
 /* public functions */
 
 char *
@@ -70,7 +96,7 @@ yaml_string_to_json_string(const char *instr)
 
 	buf = gldns_buffer_new(8192);
 	if (!buf) {
-		fprint_log(stderr, "Could not assign buffer for json output");
+		fprintf(stderr, "Could not assign buffer for json output");
 		return NULL;
 	}
 	
@@ -79,9 +105,10 @@ yaml_string_to_json_string(const char *instr)
 
 	memset(&parser, 0, sizeof(parser));
 	memset(&event, 0, sizeof(event));
+	quote_next_scalar = 0;
 
 	if (!yaml_parser_initialize(&parser)) {
-		fprint_log(stderr, "Could not initialize the parser object\n");
+		fprintf(stderr, "Could not initialize the parser object\n");
 		goto return_error;
 	}
 
@@ -96,7 +123,7 @@ yaml_string_to_json_string(const char *instr)
 
 	/* First event should be stream start. */
 	if (event.type != YAML_STREAM_START_EVENT) {
-		fprint_log(stderr, "Event error: wrong type of event: %d\n", event.type);
+		fprintf(stderr, "Event error: wrong type of event: %d\n", event.type);
 		goto return_error;
 	}
 
@@ -170,7 +197,7 @@ process_yaml_stream(yaml_parser_t *parser, yaml_event_t *event, gldns_buffer *bu
 		case YAML_MAPPING_START_EVENT:
 		case YAML_MAPPING_END_EVENT:
 
-			fprint_log(stderr,
+			fprintf(stderr,
 				"Event error: %s. Expected YAML_DOCUMENT_START_EVENT or YAML_STREAM_END_EVENT.\n",
 				event_type_string(event->type));
 			return -1;
@@ -226,7 +253,7 @@ process_yaml_document(yaml_parser_t *parser, yaml_event_t *event, gldns_buffer *
 		case YAML_SCALAR_EVENT:
 			
 			if (output_scalar(event, buf) != 0) {
-				fprint_log(stderr, "Value error: Error outputting scalar\n");
+				fprintf(stderr, "Value error: Error outputting scalar\n");
 				return -1;
 			}
 			break;
@@ -238,7 +265,7 @@ process_yaml_document(yaml_parser_t *parser, yaml_event_t *event, gldns_buffer *
 		case YAML_SEQUENCE_END_EVENT:
 		case YAML_MAPPING_END_EVENT:
 
-			fprint_log(stderr,
+			fprintf(stderr,
 				"Event error: %s. Expected YAML_MAPPING_START_EVENT or YAML_DOCUMENT_END_EVENT.\n",
 				event_type_string(event->type));
 			return -1;
@@ -279,22 +306,24 @@ process_yaml_mapping(yaml_parser_t *parser, yaml_event_t *event, gldns_buffer *b
 			if (members)
 				if (gldns_buffer_printf(buf, ", ") == -1)
 					return -1;
-			
+
+			quote_next_scalar = 0;
 			if (output_scalar(event, buf) != 0) {
-				fprint_log(stderr, "Mapping error: Error outputting key\n");
+				fprintf(stderr, "Mapping error: Error outputting key\n");
 				return -1;
 			}
 			if (gldns_buffer_printf(buf, ": ") == -1)
 				return -1;
 			
 			members = 1;
+			quote_key_values((const char*)event->data.scalar.value);
 		} else if (event->type == YAML_MAPPING_END_EVENT) {
 			if (gldns_buffer_printf(buf, " }") == -1)
 				return -1;
 			done = 1;
 			continue;
 		} else {
-			fprint_log(stderr,
+			fprintf(stderr,
 				"Event error: %s. Expected YAML_SCALAR_EVENT or YAML_MAPPING_END_EVENT.\n",
 				event_type_string(event->type));
 			return -1;
@@ -325,7 +354,7 @@ process_yaml_mapping(yaml_parser_t *parser, yaml_event_t *event, gldns_buffer *b
 		case YAML_ALIAS_EVENT:
 		case YAML_SEQUENCE_END_EVENT:
 		case YAML_MAPPING_END_EVENT:
-			fprint_log(stderr,
+			fprintf(stderr,
 				"Event error: %s. Expected YAML_MAPPING_START_EVENT, YAML_SEQUENCE_START_EVENT or YAML_SCALAR_EVENT.\n",
 				event_type_string(event->type));
 			return -1;
@@ -389,7 +418,7 @@ process_yaml_sequence(yaml_parser_t *parser, yaml_event_t *event, gldns_buffer *
 		case YAML_DOCUMENT_END_EVENT:
 		case YAML_ALIAS_EVENT:
 		case YAML_MAPPING_END_EVENT:
-			fprint_log(stderr,
+			fprintf(stderr,
 				"Event error: %s. Expected YAML_MAPPING_START_EVENT, YAML_SEQUENCE_START_EVENT, YAML_SCALAR_EVENT or YAML_SEQUENCE_END_EVENT.\n",
 				event_type_string(event->type));
 			return -1;
@@ -412,7 +441,7 @@ process_yaml_value(yaml_parser_t *parser, yaml_event_t *event, gldns_buffer *buf
 	switch (event->type) {
 	case YAML_SCALAR_EVENT:
 		if (output_scalar(event, buf) != 0) {
-			fprint_log(stderr, "Value error: Error outputting scalar\n");
+			fprintf(stderr, "Value error: Error outputting scalar\n");
 			return -1;
 		}
 		break;
@@ -430,7 +459,7 @@ process_yaml_value(yaml_parser_t *parser, yaml_event_t *event, gldns_buffer *buf
 		break;
 		
 	default:
-		fprint_log(stderr, "Bug: calling process_yaml_value() in the wrong context");
+		fprintf(stderr, "Bug: calling process_yaml_value() in the wrong context");
 		return -1;
 	}
 	return 0;
@@ -445,7 +474,7 @@ output_scalar(yaml_event_t *event, gldns_buffer *buf)
 	assert(buf);
 	assert(event->data.scalar.length > 0);
 	
-	if (event->data.scalar.style != YAML_PLAIN_SCALAR_STYLE)
+	if (quote_next_scalar)
 		fmt = "\"%s\"";
 
 	if ( gldns_buffer_printf(buf, fmt, event->data.scalar.value) == -1 )
@@ -460,28 +489,28 @@ void report_parser_error(yaml_parser_t *parser)
 	/* Display a parser error message. */
 	switch (parser->error) {
 	case YAML_MEMORY_ERROR:
-		fprint_log(stderr, "Memory error: Not enough memory for parsing\n");
+		fprintf(stderr, "Memory error: Not enough memory for parsing\n");
 		break;
 
 	case YAML_READER_ERROR:
 		if (parser->problem_value != -1) {
-			fprint_log(stderr, "Reader error: %s: #%X at %"PRIsz"\n", parser->problem,
+			fprintf(stderr, "Reader error: %s: #%X at %"PRIsz"\n", parser->problem,
 					parser->problem_value, parser->problem_offset);
 		} else {
-			fprint_log(stderr, "Reader error: %s at %"PRIsz"\n", parser->problem,
+			fprintf(stderr, "Reader error: %s at %"PRIsz"\n", parser->problem,
 					parser->problem_offset);
 		}
 		break;
 
 	case YAML_SCANNER_ERROR:
 		if (parser->context) {
-			fprint_log(stderr, "Scanner error: %s at line %"PRIsz", column %"PRIsz"\n"
+			fprintf(stderr, "Scanner error: %s at line %"PRIsz", column %"PRIsz"\n"
 					"%s at line %"PRIsz", column %"PRIsz"\n", parser->context,
 					parser->context_mark.line+1, parser->context_mark.column+1,
 					parser->problem, parser->problem_mark.line+1,
 					parser->problem_mark.column+1);
 		} else {
-			fprint_log(stderr, "Scanner error: %s at line %"PRIsz", column %"PRIsz"\n",
+			fprintf(stderr, "Scanner error: %s at line %"PRIsz", column %"PRIsz"\n",
 					parser->problem, parser->problem_mark.line+1,
 					parser->problem_mark.column+1);
 		}
@@ -489,13 +518,13 @@ void report_parser_error(yaml_parser_t *parser)
 
 	case YAML_PARSER_ERROR:
 		if (parser->context) {
-			fprint_log(stderr, "Parser error: %s at line %"PRIsz", column %"PRIsz"\n"
+			fprintf(stderr, "Parser error: %s at line %"PRIsz", column %"PRIsz"\n"
 					"%s at line %"PRIsz", column %"PRIsz"\n", parser->context,
 					parser->context_mark.line+1, parser->context_mark.column+1,
 					parser->problem, parser->problem_mark.line+1,
 					parser->problem_mark.column+1);
 		} else {
-			fprint_log(stderr, "Parser error: %s at line %"PRIsz", column %"PRIsz"\n",
+			fprintf(stderr, "Parser error: %s at line %"PRIsz", column %"PRIsz"\n",
 					parser->problem, parser->problem_mark.line+1,
 					parser->problem_mark.column+1);
 		}
@@ -503,7 +532,7 @@ void report_parser_error(yaml_parser_t *parser)
 
 	default:
 		/* Couldn't happen. */
-		fprint_log(stderr, "Internal error\n");
+		fprintf(stderr, "Internal error\n");
 		break;
 	}
 	return;
