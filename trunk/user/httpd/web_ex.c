@@ -2207,18 +2207,20 @@ ej_firmware_caps_hook(int eid, webs_t wp, int argc, char **argv)
 #endif
 #if defined (USE_WID_5G) && (USE_WID_5G==7610 || USE_WID_5G==7612 || USE_WID_5G==7615) && BOARD_HAS_5G_11AC
 	int has_5g_vht = 1;
+	int has_5g_band_steering = 1;
 #else
 	int has_5g_vht = 0;
+	int has_5g_band_steering = 0;
 #endif
 #if defined (USE_WID_5G) && USE_WID_5G==7615 && BOARD_HAS_5G_11AC
 	int has_5g_mumimo = 1;
 	int has_5g_txbf = 1;
-	int has_5g_band_steering = 1;
+//	int has_5g_band_steering = 1;
 	int has_5g_160mhz = 1;
 #else
 	int has_5g_mumimo = 0;
 	int has_5g_txbf = 0;
-	int has_5g_band_steering = 0;
+//	int has_5g_band_steering = 0;
 	int has_5g_160mhz = 0;
 #endif
 #if defined (USE_WID_2G) && USE_WID_2G==7615

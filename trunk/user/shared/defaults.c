@@ -240,6 +240,9 @@ struct nvram_pair router_defaults[] = {
 	{ "wl_guest_macrule", "0" },
 	{ "wl_guest_mcs_mode", "0" },
 
+	// band steering AP 5Ghz
+	{ "wl_band_steering", "0" },
+
 #if defined (USE_WID_5G) && USE_WID_5G==7615
 	{ "wl_mumimo", "0" },
 #endif
@@ -334,6 +337,9 @@ struct nvram_pair router_defaults[] = {
 	{ "rt_guest_wpa_psk", "" },
 	{ "rt_guest_macrule", "0" },
 	{ "rt_guest_mcs_mode", "0" },
+
+	// band steering AP 2.4Ghz
+	{ "rt_band_steering", "0" },
 
 #if defined (USE_WID_2G) && USE_WID_2G==7615
 	{ "rt_turbo_qam", "1" },
