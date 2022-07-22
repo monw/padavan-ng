@@ -1,4 +1,4 @@
-SRC_NAME=https_dns_proxy-git
+SRC_NAME=https_dns_proxy-master
 
 CFLAGS  += -O2 -ffunction-sections -fdata-sections -fvisibility=hidden -fPIC
 LDFLAGS += -Wl,--gc-sections,-rpath-link,$(STAGEDIR)/lib -lcurl -lssl -lcrypto -lz
@@ -28,3 +28,8 @@ clean:
 
 romfs:
 	$(ROMFSINST) $(SRC_NAME)/build/https_dns_proxy /usr/sbin/doh_proxy
+	$(ROMFSINST) $(SRC_NAME)/build/https_dns_proxy /usr/sbin/doh_proxy2
+	$(ROMFSINST) $(SRC_NAME)/build/https_dns_proxy /usr/sbin/doh_proxy3
+	$(ROMFSINST) $(SRC_NAME)/build/https_dns_proxy /usr/sbin/doh_proxy4
+	$(ROMFSINST) $(SRC_NAME)/build/https_dns_proxy /usr/sbin/doh_proxy5
+	

@@ -66,6 +66,20 @@ $ cmake .
 $ make
 ```
 
+### Build with HTTP/3 support
+
+* If system libcurl supports it by default nothing else has to be done
+
+* If a custom build of libcurl supports HTTP/3 which is installed in a different location, that can be set when running cmake:
+```
+$ cmake -D CUSTOM_LIBCURL_INSTALL_PATH=/absolute/path/to/custom/libcurl/install .
+```
+
+* Just to test HTTP/3 support for development purpose, simply run the following command and wait for a long time:
+```
+$ ./development_build_with_http3.sh
+```
+
 ## INSTALL
 
 ### Install built program
@@ -73,12 +87,18 @@ $ make
 This method work fine on most Linux operating system, which uses systemd.  
 Like: Raspberry Pi OS / Raspbian, Debian, Ubuntu, etc.
 
-To install the program binary and systemd service, simply execute the following after build:
+To install the program binary, systemd service and munin plugin (if munin is pre-installed),
+simply execute the following after build:
 ```
 $ sudo make install
 ```
 
-To overwrite default options use:
+To activate munin plugin, restart munin services:
+```
+$ sudo systemctl restart munin munin-node
+```
+
+To overwrite default service options use:
 ```
 $ sudo systemctl edit https_dns_proxy.service
 ```
@@ -116,7 +136,7 @@ There's also a WebUI package available for OpenWrt (`luci-app-https-dns-proxy`) 
 
 There is also an externally maintained [AUR package](https://aur.archlinux.org/packages/https-dns-proxy-git/) for latest git version. You can install as follows:
 ```
-user@arch:~# yaourt -S https-dns-proxy-git
+user@arch:~# yay -S https-dns-proxy-git
 ```
 
 ### Docker install
@@ -140,9 +160,9 @@ Just run it as a daemon and point traffic at it. Commandline flags are:
 ```
 Usage: ./https_dns_proxy [-a <listen_addr>] [-p <listen_port>]
         [-d] [-u <user>] [-g <group>] [-b <dns_servers>]
-        [-r <resolver_url>] [-e <subnet_addr>]
-        [-t <proxy_server>] [-l <logfile>] -c <dscp_codepoint>
-        [-x] [-v]+
+        [-i <polling_interval>] [-4] [-r <resolver_url>]
+        [-t <proxy_server>] [-l <logfile>] [-c <dscp_codepoint>]
+        [-x] [-q] [-s <statistic_interval>] [-v]+ [-V] [-h]
 
   -a listen_addr         Local IPv4/v6 address to bind to. (127.0.0.1)
   -p listen_port         Local port to bind to. (5053)
@@ -156,7 +176,7 @@ Usage: ./https_dns_proxy [-a <listen_addr>] [-p <listen_port>]
   -i polling_interval    Optional polling interval of DNS servers.
                          (Default: 120, Min: 5, Max: 3600)
   -4                     Force IPv4 hostnames for DNS resolvers non IPv6 networks.
-  -r resolver_url        The HTTPS path to the resolver URL. default: https://dns.google/dns-query
+  -r resolver_url        The HTTPS path to the resolver URL. Default: https://dns.google/dns-query
   -t proxy_server        Optional HTTP proxy. e.g. socks5://127.0.0.1:1080
                          Remote name resolution will be used if the protocol
                          supports it (http, https, socks4a, socks5h), otherwise
@@ -167,16 +187,35 @@ Usage: ./https_dns_proxy [-a <listen_addr>] [-p <listen_port>]
                          connections.
   -x                     Use HTTP/1.1 instead of HTTP/2. Useful with broken
                          or limited builds of libcurl. (false)
-  -v                     Increase logging verbosity. (INFO)
+  -q                     Use HTTP/3 (QUIC) only. (false)
+  -s statistic_interval  Optional statistic printout interval.
+                         (Default: 0, Disabled: 0, Min: 1, Max: 3600)
+  -v                     Increase logging verbosity. (Default: error)
+                         Levels: fatal, stats, error, warning, info, debug
+                         Request issues are logged on warning level.
   -V                     Print version and exit.
+  -h                     Print help and exit.
+```
+
+## Testing
+
+Functional tests can be executed using [Robot Framework](https://robotframework.org/).
+
+dig command is expected to be available.
+
+```
+pip3 install robotframework
+python3 -m robot.run tests/robot/functional_tests.robot
 ```
 
 ## TODO
 
 * Add some tests.
+* Improve IPv6 handling and add automatic fallback to IPv4
 
 ## Authors
 
 * Aaron Drew (aarond10@gmail.com): Original https_dns_proxy.
 * Soumya ([github.com/soumya92](https://github.com/soumya92)): RFC 8484 implementation.
+* baranyaib90 ([github.com/baranyaib90](https://github.com/baranyaib90)): fixes and improvements.
 
