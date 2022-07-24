@@ -1,8 +1,8 @@
 ##################################################################
 # Board PID # Board Name       # PRODUCT # Note
 ##################################################################
-# MI-4A-100M   # Xiaomi Mi 4A-100M   # MT7628  #
+# MI-4A_100M_BREED   # Xiaomi Mi-4A_100M_BREED   # MT7628  #
 ##################################################################
 
-CFLAGS += -DBOARD_MI4A-100M
+CFLAGS += -DBOARD_MI4A_100M_BREED
 BOARD_NUM_USB_PORTS=0
