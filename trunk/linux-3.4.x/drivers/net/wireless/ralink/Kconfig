@@ -8,6 +8,7 @@ config RT_MAX_CLIENTS
 
 config RT_BAND_STEERING
 	bool "Band Steering support"
+	depends on !RT_SECOND_IF_NONE
 	default y
 
 config RT_DOT11R_FT
