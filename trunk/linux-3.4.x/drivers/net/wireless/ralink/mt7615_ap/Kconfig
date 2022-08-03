@@ -466,7 +466,7 @@ config AIR_MONITOR
 config WNM_SUPPORT
 	bool "802.11v WNM Support"
 	depends on MT7615_AP
-	default n
+	default y
 
 #config ROAMING_ENHANCE_SUPPORT
 #	bool "Roaming Enhance Support"
