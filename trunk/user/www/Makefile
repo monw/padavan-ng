@@ -6,7 +6,7 @@ ROMFS_DIR = $(ROOTDIR)/romfs
 
 include $(ROOTDIR)/user/shared/boards.mk
 
-PROJECT_HOME_URL="https:\/\/gitlab.com\/hadzhioglu\/padavan-ng"
+PROJECT_HOME_URL="https:\/\/github.com\/hadzhioglu\/padavan-ng"
 LABEL_COPYRIGHT_TEXT="© 2011-2022 Padavan \& N56U project community \& Linaro \& Alxdm \& Hadz"
 
 BOARD_PATTERN=s/ZVMODELVZ/$(CONFIG_FIRMWARE_PRODUCT_ID)/g
