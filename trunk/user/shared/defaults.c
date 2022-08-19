@@ -198,7 +198,7 @@ struct nvram_pair router_defaults[] = {
 #else
 	{ "wl_HT_BW", "1" },
 #endif
-	{ "wl_txbf", "0" },
+	{ "wl_txbf", "1" },
 	{ "wl_ssid2",  DEF_WLAN_5G_SSID },
 	{ "wl_mode_x", "0" },
 	{ "wl_wdsapply_x", "0" },
@@ -244,7 +244,7 @@ struct nvram_pair router_defaults[] = {
 	{ "wl_band_steering", "0" },
 
 #if defined (USE_WID_5G) && USE_WID_5G==7615
-	{ "wl_mumimo", "0" },
+	{ "wl_mumimo", "1" },
 #endif
 
 	// ApCli 5Ghz
