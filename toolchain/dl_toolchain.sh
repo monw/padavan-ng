@@ -1,6 +1,6 @@
 #!/bin/sh
 
-DIR="toolchain-3.4.x"
+DIR="out"
 DL_NAME="mipsel-linux-uclibc.tar.xz"
 DL_URL="https://github.com/hanwckf/padavan-toolchain/releases/download/v1.1/$DL_NAME"
 
