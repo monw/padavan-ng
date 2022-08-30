@@ -93,6 +93,8 @@ endif
 	rm -f $(ROMFS_DIR)/www/bootstrap/js/jquery.backgroundpos.min.js
 	rm -f $(ROMFS_DIR)/www/bootstrap/js/jquery.easing.1.3.js
 	rm -f $(ROMFS_DIR)/www/bootstrap/css/bootstrap.css
+	rm -f $(ROMFS_DIR)/www/vpncli.asp
+	rm -f $(ROMFS_DIR)/www/vpnsrv.asp
 ifeq ($(BOARD_HAS_5G_RADIO),0)
 	rm -f $(INSTALLDIR)/www/Advanced_ACL_Content.asp
 	rm -f $(INSTALLDIR)/www/Advanced_WAdvanced_Content.asp
