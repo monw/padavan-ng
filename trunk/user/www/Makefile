@@ -6,8 +6,8 @@ ROMFS_DIR = $(ROOTDIR)/romfs
 
 include $(ROOTDIR)/user/shared/boards.mk
 
-PROJECT_HOME_URL="https:\/\/github.com\/hadzhioglu\/padavan-ng"
-LABEL_COPYRIGHT_TEXT="© 2011-2022 Padavan \& N56U project community \& Linaro \& Alxdm \& Hadz"
+PROJECT_HOME_URL="https:\/\/github.com\/monw\/padavan-ng"
+LABEL_COPYRIGHT_TEXT="© 2011-2022 Padavan \& N56U project community \& Padavan"
 
 BOARD_PATTERN=s/ZVMODELVZ/$(CONFIG_FIRMWARE_PRODUCT_ID)/g
 COPYR_PATTERN=s/ZVCOPYRVZ/$(LABEL_COPYRIGHT_TEXT)/g
@@ -41,9 +41,9 @@ ifeq ($(CONFIG_FIRMWARE_INCLUDE_LANG_CZ),y)
 	echo "LANG_CZ=Česky" >> $(ROMFS_DIR)/www/EN.header
 	cp dict/CZ.dict $(ROMFS_DIR)/www
 endif
-ifeq ($(CONFIG_FIRMWARE_INCLUDE_LANG_DA),y)
-	echo "LANG_DA=Dansk" >> $(ROMFS_DIR)/www/EN.header
-	cp dict/DA.dict $(ROMFS_DIR)/www
+ifeq ($(CONFIG_FIRMWARE_INCLUDE_LANG_CN),y)
+	echo "LANG_CN=简体中文" >> $(ROMFS_DIR)/www/EN.header
+	cp dict/CN.dict $(ROMFS_DIR)/www
 endif
 ifeq ($(CONFIG_FIRMWARE_INCLUDE_LANG_DE),y)
 	echo "LANG_DE=Deutsch" >> $(ROMFS_DIR)/www/EN.header
@@ -87,6 +87,7 @@ endif
 	sed $(COPYR_PATTERN) -i $(ROMFS_DIR)/www/*.dict
 	sed $(DWURL_PATTERN) -i $(ROMFS_DIR)/www/*.dict
 	rm -f $(ROMFS_DIR)/www/EN.header
+	rm -f $(ROMFS_DIR)/www/EN.dict
 	rm -f $(ROMFS_DIR)/www/bootstrap/js/bootstrap.js
 	rm -f $(ROMFS_DIR)/www/bootstrap/js/engage.itoggle.js
 	rm -f $(ROMFS_DIR)/www/bootstrap/js/jquery.backgroundpos.min.js
